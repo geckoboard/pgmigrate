@@ -340,6 +340,66 @@ func TestAppliedAndPlanWithoutMigrationsTable(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestApplyNoTransactionMigration(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	logger := pgmigrate.NewTestLogger(t)
+	err := withdb.WithDB(ctx, "pgx", func(db *sql.DB) error {
+		migrations := []pgmigrate.Migration{
+			{
+				ID:            "0001_initial",
+				SQL:           "CREATE TABLE users (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT);",
+				NoTransaction: true,
+			},
+		}
+		migrator := pgmigrate.NewMigrator(migrations)
+		migrator.Logger = logger
+		verrs, err := migrator.Migrate(ctx, db)
+		assert.Nil(t, err)
+		assert.Equal(t, nil, verrs)
+
+		applied, err := migrator.Applied(ctx, db)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(applied))
+		check.Equal(t, migrations[0].ID, applied[0].ID)
+		check.Equal(t, migrations[0].MD5(), applied[0].Checksum)
+		return nil
+	})
+	assert.Nil(t, err)
+}
+
+func TestApplyCreateIndexConcurrently(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	logger := pgmigrate.NewTestLogger(t)
+	err := withdb.WithDB(ctx, "pgx", func(db *sql.DB) error {
+		migrations := []pgmigrate.Migration{
+			{
+				ID:  "0001_create_table",
+				SQL: "CREATE TABLE users (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT);",
+			},
+			{
+				ID:            "0002_create_index",
+				SQL:           "-- pgmigrate: no-transaction\nCREATE INDEX CONCURRENTLY idx_users_name ON users (name);",
+				NoTransaction: true,
+			},
+		}
+		migrator := pgmigrate.NewMigrator(migrations)
+		migrator.Logger = logger
+		verrs, err := migrator.Migrate(ctx, db)
+		assert.Nil(t, err)
+		assert.Equal(t, nil, verrs)
+
+		applied, err := migrator.Applied(ctx, db)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(applied))
+		check.Equal(t, "0001_create_table", applied[0].ID)
+		check.Equal(t, "0002_create_index", applied[1].ID)
+		return nil
+	})
+	assert.Nil(t, err)
+}
+
 // By default, pgmigrate will use the [DefaultTableName] table to
 // keep track of migrations. Because this is a fully qualified table name,
 // including a schema prefix, pgmigrate will not be affected by migrations

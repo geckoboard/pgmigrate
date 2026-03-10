@@ -41,6 +41,7 @@ func Load(filesystem fs.FS) ([]Migration, error) {
 			return err
 		}
 		migration.SQL = string(data)
+		migration.NoTransaction = parseNoTransaction(migration.SQL)
 		migrations = append(migrations, migration)
 		return nil
 	}); err != nil {

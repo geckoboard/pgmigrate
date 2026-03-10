@@ -11,8 +11,9 @@ import (
 
 // Migration represents a single SQL migration.
 type Migration struct {
-	ID  string // the filename of the migration, without the .sql extension
-	SQL string // the contents of the migration file
+	ID            string // the filename of the migration, without the .sql extension
+	SQL           string // the contents of the migration file
+	NoTransaction bool   // if true, the migration will not be wrapped in a transaction
 }
 
 // MD5 computes the MD5 hash of the SQL for this migration so that it can be
@@ -29,6 +30,18 @@ type AppliedMigration struct {
 	Checksum              string    // The MD5 hash of the SQL of this migration
 	ExecutionTimeInMillis int64     // How long it took to run this migration
 	AppliedAt             time.Time // When the migration was run
+}
+
+// noTransactionPrefix is the magic comment that, when present on the first
+// line of a migration file, indicates the migration should not be wrapped in a
+// transaction. This is useful for operations like CREATE INDEX CONCURRENTLY.
+const noTransactionPrefix = "-- pgmigrate: no-transaction"
+
+// parseNoTransaction checks if the SQL content starts with the magic comment
+// "-- pgmigrate: no-transaction" on the first line.
+func parseNoTransaction(sql string) bool {
+	firstLine, _, _ := strings.Cut(sql, "\n")
+	return strings.TrimSpace(firstLine) == noTransactionPrefix
 }
 
 // IDFromFilename removes directory paths and extensions from the filename to

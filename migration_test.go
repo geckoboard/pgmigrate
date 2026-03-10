@@ -6,6 +6,45 @@ import (
 	"github.com/peterldowns/testy/check"
 )
 
+func TestParseNoTransaction(t *testing.T) {
+	t.Parallel()
+	t.Run("present on first line", func(t *testing.T) {
+		t.Parallel()
+		sql := "-- pgmigrate: no-transaction\nCREATE INDEX CONCURRENTLY idx ON users (name);"
+		check.Equal(t, true, parseNoTransaction(sql))
+	})
+	t.Run("absent", func(t *testing.T) {
+		t.Parallel()
+		sql := "CREATE TABLE users (id int);"
+		check.Equal(t, false, parseNoTransaction(sql))
+	})
+	t.Run("on second line", func(t *testing.T) {
+		t.Parallel()
+		sql := "-- some other comment\n-- pgmigrate: no-transaction\nCREATE INDEX CONCURRENTLY idx ON users (name);"
+		check.Equal(t, false, parseNoTransaction(sql))
+	})
+	t.Run("with trailing whitespace", func(t *testing.T) {
+		t.Parallel()
+		sql := "-- pgmigrate: no-transaction   \nCREATE INDEX CONCURRENTLY idx ON users (name);"
+		check.Equal(t, true, parseNoTransaction(sql))
+	})
+	t.Run("with leading whitespace", func(t *testing.T) {
+		t.Parallel()
+		sql := "  -- pgmigrate: no-transaction\nCREATE INDEX CONCURRENTLY idx ON users (name);"
+		check.Equal(t, true, parseNoTransaction(sql))
+	})
+	t.Run("only the comment no newline", func(t *testing.T) {
+		t.Parallel()
+		sql := "-- pgmigrate: no-transaction"
+		check.Equal(t, true, parseNoTransaction(sql))
+	})
+	t.Run("similar but different comment", func(t *testing.T) {
+		t.Parallel()
+		sql := "-- pgmigrate: no-transactions\nCREATE INDEX CONCURRENTLY idx ON users (name);"
+		check.Equal(t, false, parseNoTransaction(sql))
+	})
+}
+
 func TestIDFromFilename(t *testing.T) {
 	t.Parallel()
 	check.Equal(t, "0001_initial", IDFromFilename("0001_initial.sql"))
