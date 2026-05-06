@@ -112,8 +112,7 @@ func NewMigrator(
 // Finally, the advisory lock is released.
 func (m *Migrator) Migrate(ctx context.Context, db *sql.DB) ([]VerificationError, error) {
 	var verrs []VerificationError
-	lockName := fmt.Sprintf("%s-%s", sessionLockPrefix, m.TableName)
-	return verrs, sessionlock.With(ctx, db, lockName, func(conn *sql.Conn) error {
+	return verrs, m.WithLock(ctx, db, func(conn *sql.Conn) error {
 		err := m.ensureMigrationsTable(ctx, conn)
 		if err != nil {
 			return err
@@ -136,6 +135,19 @@ func (m *Migrator) Migrate(ctx context.Context, db *sql.DB) ([]VerificationError
 		verrs, err = m.Verify(ctx, db)
 		return err
 	})
+}
+
+// WithLock acquires the same Postgres advisory lock that [Migrator.Migrate]
+// uses internally, runs cb on a connection that holds the lock, and releases
+// the lock when cb returns. This lets external callers coordinate with
+// pgmigrate — for example, to safely seed or backfill the migrations table
+// without racing against a concurrent Migrate call.
+//
+// The connection passed to cb is dedicated to the lock holder and is closed
+// after cb returns. cb should run all of its statements on that connection.
+func (m *Migrator) WithLock(ctx context.Context, db *sql.DB, cb func(*sql.Conn) error) error {
+	lockName := fmt.Sprintf("%s-%s", sessionLockPrefix, m.TableName)
+	return sessionlock.With(ctx, db, lockName, cb)
 }
 
 // ensureMigrationsTable will create the migrations table if it does not exist.
