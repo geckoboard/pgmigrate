@@ -12,7 +12,7 @@ import (
 	"hash/crc32"
 	"time"
 
-	"github.com/peterldowns/pgmigrate/internal/multierr"
+	"github.com/geckoboard/pgmigrate/internal/multierr"
 )
 
 // IDPrefix is prepended to any given lock name when computing the integer lock

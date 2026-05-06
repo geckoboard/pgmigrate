@@ -1,12 +1,12 @@
-module github.com/peterldowns/pgmigrate/cmd/pgmigrate
+module github.com/geckoboard/pgmigrate/cmd/pgmigrate
 
 go 1.24.0
 
 require (
 	github.com/charmbracelet/log v0.4.0
 	github.com/fatih/color v1.17.0
+	github.com/geckoboard/pgmigrate v0.4.0
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/peterldowns/pgmigrate v0.4.0
 	github.com/spf13/cobra v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -39,3 +39,5 @@ require (
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 )
+
+replace github.com/geckoboard/pgmigrate => ../..

@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/peterldowns/testy/check"
 
-	"github.com/peterldowns/pgmigrate/internal/multierr"
+	"github.com/geckoboard/pgmigrate/internal/multierr"
 )
 
 func TestJoinNils(t *testing.T) {

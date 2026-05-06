@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/log"
 	_ "github.com/lib/pq"
 
-	"github.com/peterldowns/pgmigrate"
+	"github.com/geckoboard/pgmigrate"
 )
 
 // This is a simplified example of an application that will run a web server.

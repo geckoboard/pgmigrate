@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/peterldowns/pgmigrate"
-	"github.com/peterldowns/pgmigrate/cmd/pgmigrate/shared"
+	"github.com/geckoboard/pgmigrate"
+	"github.com/geckoboard/pgmigrate/cmd/pgmigrate/shared"
 )
 
 var RecalculateChecksumFlags struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/peterldowns/pgmigrate/cmd/pgmigrate/shared"
+	"github.com/geckoboard/pgmigrate/cmd/pgmigrate/shared"
 )
 
 var verifyCmd = &cobra.Command{ //nolint:gochecknoglobals

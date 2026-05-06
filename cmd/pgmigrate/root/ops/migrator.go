@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/peterldowns/pgmigrate"
+	"github.com/geckoboard/pgmigrate"
 )
 
 // newMigrator loads migrations from dir and returns a configured migrator for

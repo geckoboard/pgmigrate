@@ -9,10 +9,10 @@ import (
 	"github.com/peterldowns/testy/assert"
 	"github.com/peterldowns/testy/check"
 
-	"github.com/peterldowns/pgmigrate"
+	"github.com/geckoboard/pgmigrate"
 
-	"github.com/peterldowns/pgmigrate/internal/schema"
-	"github.com/peterldowns/pgmigrate/internal/withdb"
+	"github.com/geckoboard/pgmigrate/internal/schema"
+	"github.com/geckoboard/pgmigrate/internal/withdb"
 )
 
 func TestApplyNoMigrationsSucceeds(t *testing.T) {

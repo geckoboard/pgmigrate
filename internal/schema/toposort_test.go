@@ -5,7 +5,7 @@ import (
 
 	"github.com/peterldowns/testy/check"
 
-	"github.com/peterldowns/pgmigrate/internal/schema"
+	"github.com/geckoboard/pgmigrate/internal/schema"
 )
 
 func TestToposortWithCycles(t *testing.T) {

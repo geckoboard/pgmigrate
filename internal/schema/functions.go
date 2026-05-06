@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/peterldowns/pgmigrate/internal/pgtools"
+	"github.com/geckoboard/pgmigrate/internal/pgtools"
 )
 
 type Function struct {

@@ -13,8 +13,8 @@ import (
 
 	"github.com/charmbracelet/log"
 
-	"github.com/peterldowns/pgmigrate"
-	"github.com/peterldowns/pgmigrate/internal/schema"
+	"github.com/geckoboard/pgmigrate"
+	"github.com/geckoboard/pgmigrate/internal/schema"
 )
 
 type Flags struct {
