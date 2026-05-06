@@ -1,5 +1,9 @@
 # 🐽 pgmigrate
 
+> **Note:** This is the Geckoboard fork of [peterldowns/pgmigrate](https://github.com/peterldowns/pgmigrate).
+> The Go module path is renamed to `github.com/geckoboard/pgmigrate` so it can be consumed
+> directly without a `replace` directive. Carries any Geckoboard-specific patches on top of upstream.
+
 ![Latest Version](https://badgers.space/badge/latest%20version/v0.4.0/blueviolet?corner_radius=m)
 ![Golang](https://badgers.space/badge/golang/1.18+/blue?corner_radius=m)
 
