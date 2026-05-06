@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/peterldowns/pgmigrate/internal/pgtools"
+	"github.com/geckoboard/pgmigrate/internal/pgtools"
 )
 
 // MarkApplied (⚠️ danger) is a manual operation that marks specific migrations

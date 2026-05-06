@@ -14,7 +14,7 @@ import (
 	"github.com/peterldowns/testy/assert"
 	"github.com/peterldowns/testy/check"
 
-	"github.com/peterldowns/pgmigrate/internal/withdb"
+	"github.com/geckoboard/pgmigrate/internal/withdb"
 )
 
 func TestWithSessionLock(t *testing.T) {

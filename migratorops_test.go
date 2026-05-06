@@ -8,9 +8,9 @@ import (
 	"github.com/peterldowns/testy/assert"
 	"github.com/peterldowns/testy/check"
 
-	"github.com/peterldowns/pgmigrate"
-	"github.com/peterldowns/pgmigrate/internal/migrations"
-	"github.com/peterldowns/pgmigrate/internal/withdb"
+	"github.com/geckoboard/pgmigrate"
+	"github.com/geckoboard/pgmigrate/internal/migrations"
+	"github.com/geckoboard/pgmigrate/internal/withdb"
 )
 
 func TestMarkApplied(t *testing.T) {

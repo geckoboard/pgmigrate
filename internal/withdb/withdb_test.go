@@ -8,7 +8,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // pgx driver for postgres
 	"github.com/peterldowns/testy/assert"
 
-	"github.com/peterldowns/pgmigrate/internal/withdb"
+	"github.com/geckoboard/pgmigrate/internal/withdb"
 )
 
 func TestWithDB(t *testing.T) {

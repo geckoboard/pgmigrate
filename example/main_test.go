@@ -8,7 +8,7 @@ import (
 	"github.com/peterldowns/pgtestdb/migrators/pgmigrator"
 	"github.com/peterldowns/testy/assert"
 
-	"github.com/peterldowns/pgmigrate"
+	"github.com/geckoboard/pgmigrate"
 )
 
 // This is a helper function to open a connection to a unique, fully-isolated,

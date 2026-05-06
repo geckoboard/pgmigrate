@@ -5,7 +5,7 @@ import (
 
 	"github.com/peterldowns/testy/check"
 
-	"github.com/peterldowns/pgmigrate/internal/pgtools"
+	"github.com/geckoboard/pgmigrate/internal/pgtools"
 )
 
 func TestLiteral(t *testing.T) {
