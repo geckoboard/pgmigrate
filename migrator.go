@@ -150,6 +150,14 @@ func (m *Migrator) WithLock(ctx context.Context, db *sql.DB, cb func(*sql.Conn) 
 	return sessionlock.With(ctx, db, lockName, cb)
 }
 
+// EnsureMigrationsTable creates the migrations table if it does not exist.
+// Callers don't normally need to invoke this — [Migrate] handles it. It is
+// exposed so callers can prepare the table inside their own [WithLock]
+// callback when seeding or backfilling.
+func (m *Migrator) EnsureMigrationsTable(ctx context.Context, db Executor) error {
+	return m.ensureMigrationsTable(ctx, db)
+}
+
 // ensureMigrationsTable will create the migrations table if it does not exist.
 func (m *Migrator) ensureMigrationsTable(ctx context.Context, db Executor) error {
 	m.info(ctx, "ensuring migrations table exists", LogField{Key: "table_name", Value: m.TableName})
