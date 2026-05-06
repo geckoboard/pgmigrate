@@ -291,11 +291,9 @@ func (m *Migrator) inTx(ctx context.Context, db Executor, cb func(tx *sql.Tx) er
 	return cb(tx)
 }
 
-// applyMigration runs a single migration inside a transaction:
-// - BEGIN;
-// - apply the migration
-// - insert a record marking the migration as applied
-// - COMMIT;
+// applyMigration runs a single migration. If the migration has NoTransaction
+// set, it runs the SQL and inserts the record directly on the connection
+// without a transaction. Otherwise, it wraps both operations in a transaction.
 func (m *Migrator) applyMigration(ctx context.Context, db Executor, migration Migration) error {
 	startedAt := time.Now().UTC()
 	fields := []LogField{
@@ -303,47 +301,56 @@ func (m *Migrator) applyMigration(ctx context.Context, db Executor, migration Mi
 		{Key: "migration_checksum", Value: migration.MD5()},
 		{Key: "started_at", Value: startedAt},
 	}
+	if migration.NoTransaction {
+		fields = append(fields, LogField{Key: "no_transaction", Value: true})
+		m.warn(ctx, "applying migration without transaction — if the SQL succeeds but recording fails, the migration will be applied but not tracked", fields...)
+		return m.applyMigrationSQL(ctx, db, migration, startedAt, fields)
+	}
 	m.info(ctx, "applying migration", fields...)
 	return m.inTx(ctx, db, func(tx *sql.Tx) error {
-		// Run the migration SQL
-		_, err := tx.ExecContext(ctx, migration.SQL)
-		finishedAt := time.Now().UTC()
-		executionTimeMs := finishedAt.Sub(startedAt).Milliseconds()
-		fields = append(fields,
-			LogField{Key: "execution_time_ms", Value: executionTimeMs},
-			LogField{Key: "finished_at", Value: finishedAt},
-		)
-		if err != nil {
-			msg := "failed to apply migration"
-			for key, val := range pgtools.ErrorData(err) {
-				fields = append(fields, LogField{Key: key, Value: val})
-			}
-			m.error(ctx, err, msg, fields...)
-			return fmt.Errorf("%s: %w", msg, err)
-		}
-		m.info(ctx, "migration succeeded", fields...)
-		// Mark the migration as applied
-		applied := AppliedMigration{Migration: migration}
-		applied.Checksum = migration.MD5()
-		applied.ExecutionTimeInMillis = executionTimeMs
-		applied.AppliedAt = startedAt
-		query := fmt.Sprintf(`
-			INSERT INTO %s
-			( id, checksum, execution_time_in_millis, applied_at )
-			VALUES
-			( $1, $2, $3, $4 )`,
-			pgtools.Identifier(m.TableName),
-		)
-		m.debug(ctx, query)
-		_, err = tx.ExecContext(ctx, query, applied.ID, applied.Checksum, applied.ExecutionTimeInMillis, applied.AppliedAt)
-		if err != nil {
-			msg := "failed to mark migration as applied"
-			m.error(ctx, err, msg, fields...)
-			return fmt.Errorf("%s: %w", msg, err)
-		}
-		m.info(ctx, "marked as applied", fields...)
-		return nil
+		return m.applyMigrationSQL(ctx, tx, migration, startedAt, fields)
 	})
+}
+
+func (m *Migrator) applyMigrationSQL(ctx context.Context, exec interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}, migration Migration, startedAt time.Time, fields []LogField) error {
+	_, err := exec.ExecContext(ctx, migration.SQL)
+	finishedAt := time.Now().UTC()
+	executionTimeMs := finishedAt.Sub(startedAt).Milliseconds()
+	fields = append(fields,
+		LogField{Key: "execution_time_ms", Value: executionTimeMs},
+		LogField{Key: "finished_at", Value: finishedAt},
+	)
+	if err != nil {
+		msg := "failed to apply migration"
+		for key, val := range pgtools.ErrorData(err) {
+			fields = append(fields, LogField{Key: key, Value: val})
+		}
+		m.error(ctx, err, msg, fields...)
+		return fmt.Errorf("%s: %w", msg, err)
+	}
+	m.info(ctx, "migration succeeded", fields...)
+	applied := AppliedMigration{Migration: migration}
+	applied.Checksum = migration.MD5()
+	applied.ExecutionTimeInMillis = executionTimeMs
+	applied.AppliedAt = startedAt
+	query := fmt.Sprintf(`
+		INSERT INTO %s
+		( id, checksum, execution_time_in_millis, applied_at )
+		VALUES
+		( $1, $2, $3, $4 )`,
+		pgtools.Identifier(m.TableName),
+	)
+	m.debug(ctx, query)
+	_, err = exec.ExecContext(ctx, query, applied.ID, applied.Checksum, applied.ExecutionTimeInMillis, applied.AppliedAt)
+	if err != nil {
+		msg := "failed to mark migration as applied"
+		m.error(ctx, err, msg, fields...)
+		return fmt.Errorf("%s: %w", msg, err)
+	}
+	m.info(ctx, "marked as applied", fields...)
+	return nil
 }
 
 // Verify returns a list of [VerificationError]s with warnings for any migrations that:
